@@ -33,14 +33,14 @@ class ViewModel {
 
     init() {
 
-        // STEP 4.
+        // STEP 0.
         // Prepare Vision Request - Detect animals
 
         let vnRequest = VNRecognizeAnimalsRequest(completionHandler: { [weak self] request, error in
             var visionResult: ResultModel? = nil
 
             defer {
-                // STEP 6.2.
+                // STEP 9.
                 // Call completion with Result - on main thread
 
                 DispatchQueue.main.async { [weak self] in
@@ -48,7 +48,6 @@ class ViewModel {
 
                     self?.searchCompletion?(visionResult, inProcessARFrame)
 
-                    // STEP 6.3.
                     // just another ODD way to slow down the processing - it's really expensive
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         self?.inProcessARFrame = nil
@@ -56,20 +55,24 @@ class ViewModel {
                 }
             }
 
-            // STEP 6.
-            // Vision Result is here
-
             if let error = error {
                 print("\(error)")
             }
+
+            // STEP 7.
+            // A valid Vision Result is here
+            // we can get more than one result for the given frame;
+            // for this example we only care about a single detection.
 
             guard let results = request.results as? [VNRecognizedObjectObservation],
                   let result = results.first else {
                 return
             }
 
-            // STEP 6.1.
-            // We only care about a single result of a cat
+            // STEP 8.
+            // we only care about the most confident label, and hopefully it's a Cat.
+            // we can of course check the confidence of the top label: `result.labels.first?.confidence`;
+            // for this example we're keep it simple.
 
             guard let bestLabelIdentifier = result.labels.first?.identifier else { return }
 
@@ -79,7 +82,7 @@ class ViewModel {
             )
         })  // end Vision Request result completion
 
-        // STEP 4.1.
+        // STEP 1.
         // Append this request to Vision Requests list
 
         vnRequests.append(vnRequest)
@@ -92,7 +95,7 @@ class ViewModel {
             return
         }
 
-        // STEP 5.
+        // STEP 6.
         // Update Search completion,
         // and Execute Vision Request async.
 

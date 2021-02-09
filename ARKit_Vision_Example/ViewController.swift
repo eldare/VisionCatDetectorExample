@@ -16,7 +16,7 @@ import RealityKit
 class ViewController: UIViewController {
     @IBOutlet var arView: ARView!
 
-    private let viewModel = ViewModel()
+    private let viewModel = ViewModel()  // SEE STEP 0
     private var isARReady = true
 
     lazy private var breadEntity: EntityContainer = {
@@ -31,7 +31,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // STEP 0.
+        // STEP 2.
         // Setup AR Session with World Tracking Configuration
 
         setupARSession()
@@ -40,7 +40,7 @@ class ViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        // STEP 1.
+        // STEP 3.
         // Setup and start Coaching
 
         setupCoachingOverlay(with: arView.session)
@@ -61,7 +61,7 @@ extension ViewController: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         guard isARReady else { return }
 
-        // STEP 3.
+        // STEP 5.
         // Incoming ARKit frame, lets search it.
         // This is a heavy operation, and should be minimize as much as possible.
         // Even 1/10 cycles is ok.
@@ -69,7 +69,7 @@ extension ViewController: ARSessionDelegate {
         viewModel.search(in: frame) { [weak self] result, arFrame in
             guard let self = self else { return }
 
-            // STEP 7.
+            // STEP 10.
             // We got a response from search - continue only if valid result
 
             guard let result = result, result.isCat else {
@@ -77,12 +77,12 @@ extension ViewController: ARSessionDelegate {
                 return
             }
 
-            // STEP 7.1.
+            // STEP 11.
             // Cat found! Adjust bounding box for display
 
             let displayBoundingBox = result.rawBoundingBox.flippedCoordinates
 
-            // STEP 8.
+            // STEP 12.
             // Raycast through the center of the display bounding box
             // until a plane is reached. Any plane.
 
@@ -101,7 +101,7 @@ extension ViewController: ARSessionDelegate {
                 return
             }
 
-            // STEP 9.
+            // STEP 13.
             // Update RealityKit bread entity position the screen - at the raycast result.
 
             let realWorldMatrix = firstRaycastResult.worldTransform
@@ -119,7 +119,7 @@ extension ViewController: ARSessionDelegate {
 
             self.breadEntity.position = simd3_positionVector  // simd3 position vector
 
-            // STEP 9.1.
+            // STEP 14.
             // rotate the RealityKit bread entity to face the camera
 
             self.breadEntity.look(
@@ -136,7 +136,7 @@ extension ViewController: ARSessionDelegate {
 
 extension ViewController: ARCoachingOverlayViewDelegate {
 
-    // STEP 2.
+    // STEP 4.
     // Now that Coaching is active, ARKit can turn it on / off as often as required.
     // We must always init `isARReady = true`, since it will never be called for ARKit Replay (Debug) -
     // Edit Scheme -> Run -> Options -> ARKit Reply data
@@ -161,9 +161,8 @@ extension ARCoachingOverlayViewDelegate where Self: UIViewController {
         coachingOverlay.session = arSession
         coachingOverlay.delegate = self
 
-        // STEP 1.1.
         // We define where Coaching is displayed on the screen.
-        // Coaching is dismissed once the goal is met - default goal is .anyPlane
+        // Coaching is dismissed once the goal is met - our default goal is .anyPlane
 
         view.addSubview(coachingOverlay)
 
